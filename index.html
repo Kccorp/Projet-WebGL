@@ -21,48 +21,26 @@
 			import { GLTFLoader } from './three.js-master/examples/jsm/loaders/GLTFLoader.js';
 			import { RoomEnvironment } from './three.js-master/examples/jsm/environments/RoomEnvironment.js';
 			import { FBXLoader } from './three.js-master/examples/jsm/loaders/FBXLoader.js';
+			import { GUI } from './three.js-master/examples/jsm/libs/dat.gui.module.js';
 
 			import Stats from './three.js-master/examples/jsm/libs/stats.module.js'
 
 
 			let camera, scene, renderer, controls, stats;
 
+			let gui;
+
 			let mixer                = null;     // Three.JS AnimationMixer
 			let Player_anim_IDLE     = undefined;    // Animation IDLE
+			let Player_anim_WALK     = undefined;    // Animation WALK
 
-			let clock = new THREE.Clock(); //lance l'horloge 
+			let clock = new THREE.Clock(); //lance l'horloge
 
 			init();
-
-			//Génerat world
-			new GLTFLoader()
-				.setPath( '3D/world/' )
-				.load( 'scene.gltf', function ( gltf ) {
-
-					scene.add( gltf.scene );
-
-				} );
-
-			//generate charactere
-
-			new GLTFLoader().setPath( '3D/Characters/Mousey/' ).load( 'Mousey.gltf', function ( gltf ) {
-
-					gltf.scene.translateX(-40);
-					gltf.scene.translateY(-4.7);
-					gltf.scene.translateZ(30);
-					gltf.scene.rotation.y = Math.PI / 1.5;
-
-					// ---------------- ANIMATIONMIXER----------------
-	 				mixer = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
-
-					//Anims
-					Player_anim_IDLE = gltf.animations[0] ; // first animation
-
-					mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
-
-					scene.add( gltf.scene );
-				} );
-
+			World();
+			Animations();
+			GenObject();
+			buildGui()
 			animate();
 
 			function init() {
@@ -108,6 +86,77 @@
 
 			}
 
+			function World(){
+			  //Génerat world
+			  new GLTFLoader().setPath( '3D/world/' ).load( 'scene.gltf', function ( gltf ) {
+			      scene.add( gltf.scene );
+			    } );
+			}
+
+			function Animations() {
+				//generate animation : WALK
+				new GLTFLoader().setPath( '3D/animations/gltf/' ).load( 'Walking.glb', function ( gltf ) {
+
+						//------------Anims-------------------------------
+						Player_anim_WALK = gltf.animations[0] ; // first animation
+
+				} );
+
+				//generate animation : IDLE
+				new GLTFLoader().setPath( '3D/animations/gltf/' ).load( 'BreathingIDLE.glb', function ( gltf ) {
+
+						//------------Anims-------------------------------
+						Player_anim_IDLE = gltf.animations[0] ; // first animation
+
+				} );
+			}
+
+			function GenObject() {
+
+
+				//generate charactere : MOUSEY + set animation
+
+				new GLTFLoader().setPath( '3D/Characters/Mousey/' ).load( 'Mousey.glb', function ( gltf ) {
+
+						gltf.scene.translateX(-40);
+						gltf.scene.translateY(-4.7);
+						gltf.scene.translateZ(30);
+						gltf.scene.rotation.y = Math.PI / 2;
+
+						// ---------------- ANIMATIONMIXER----------------
+		 				mixer = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
+
+						//------------Anims-------------------------------
+						mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
+
+						scene.add( gltf.scene );
+					} );
+			}
+
+			function buildGui() {
+
+				gui = new GUI();
+
+				const params = { //définie les paramètre que va afficher le gui
+					marcher: marcher, //appelle la fonction jour
+					stop: stop, //appelle la fonction midi
+				};
+
+				gui.add( params, 'marcher'); // créer le bouton midi
+
+				gui.add( params, 'stop'); // créer le bouton midi
+
+				gui.open();
+
+			}
+
+			function marcher() {
+				console.log("marcher : OK");
+			}
+
+			function stop() {
+				console.log("stop : OK");
+			}
 
 			function onWindowResize() {
 
