@@ -35,6 +35,7 @@
 			let Player_anim_IDLE     = undefined;    // Animation IDLE
 			let Player_anim_WALK     = undefined;    // Animation WALK
 			let Player_anim_WORLD     = undefined;    // Animation WALK
+			let Player_anim_JUMP     = undefined;    // Animation WALK
 
 			let clock = new THREE.Clock(); //lance l'horloge
 			let clockWorld = new THREE.Clock(); //lance l'horloge
@@ -43,7 +44,8 @@
 			let s_press = 83;
 			let space_bar = 32;
 
-			let verif_actions;
+			let verif_actions, tmp = 0;
+
 
 			init();
 
@@ -80,7 +82,7 @@
 
 				controls = new OrbitControls( camera, renderer.domElement );
 				controls.enableDamping = true;
-				controls.minDistance = 1;
+				controls.minDistance = 0.5;
 				controls.maxDistance = 200;
 				controls.target.set( -40, -5, 30 );
 				controls.update();
@@ -118,9 +120,13 @@
 
 						//------------Anims-------------------------------
 						Player_anim_WORLD = gltf.animations[0] ; // first animation
+				} );
 
+				//generate animation : JUMP
+				new GLTFLoader().setPath( '3D/animations/gltf/' ).load( 'Jumping.glb', function ( gltf ) {
 
-
+						//------------Anims-------------------------------
+						Player_anim_JUMP = gltf.animations[0] ; // first animation
 				} );
 			}
 
@@ -149,7 +155,14 @@
 
 						gltf.scene.translateX(-40);
 						gltf.scene.translateY(-4.7);
-						gltf.scene.translateZ(30);
+						gltf.scene.translateZ(31);
+						/*gltf.scene.translateX(-24.51);
+						gltf.scene.translateY(-1.4470999999998666 );
+						gltf.scene.translateZ(31);*/
+						/*gltf.scene.translateX(-14.589999999998703);
+						gltf.scene.translateY(-0.2620199999998567);
+						gltf.scene.translateZ(31);*/
+
 						gltf.scene.rotation.y = Math.PI / 2;
 
 						// ---------------- ANIMATIONMIXER----------------
@@ -162,34 +175,52 @@
 					} );
 			}
 
-			//Keyboard Controls
 
+
+
+			//Keyboard Controls
 			document.onkeydown = function(e) {
 						if (e.keyCode == z_press){
 							marcher();
 						} else if (e.keyCode == space_bar) {
 							stop();
 						} else if (e.keyCode == s_press) {
-
+							jump();
 						}
 				}
 
 			function marcher() {
-				verif_actions = "walk";
-				mixer.clipAction( Player_anim_IDLE ).stop(); //joue l'animation chargé
+				if (verif_actions == "JUMP") {
+					mixer.clipAction( Player_anim_JUMP ).stop(); //joue l'animation chargé
+				} else if (verif_actions == "IDLE") {
+					mixer.clipAction( Player_anim_IDLE ).stop(); //joue l'animation chargé
+				}
+				verif_actions = "WALK";
 				mixer.clipAction( Player_anim_WALK ).play(); //joue l'animation chargé
 			}
 
-			function reculer() {
-				verif_actions = "IDLE";
-				mixer.clipAction( Player_anim_WALK ).stop(); //joue l'animation chargé
-				mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
+			function jump() {
+				if (verif_actions == "WALK") {
+					mixer.clipAction( Player_anim_WALK ).stop(); //joue l'animation chargé
+				} else if (verif_actions == "IDLE") {
+					mixer.clipAction( Player_anim_IDLE ).stop(); //joue l'animation chargé
+				}
+				verif_actions = "JUMP";
+				mixer.clipAction( Player_anim_JUMP ).play(); //joue l'animation chargé
 			}
 
 			function stop() {
+				if (verif_actions == "JUMP") {
+					mixer.clipAction( Player_anim_JUMP ).stop(); //joue l'animation chargé
+				} else if (verif_actions == "WALK") {
+					mixer.clipAction( Player_anim_WALK ).stop(); //joue l'animation chargé
+				}
 				verif_actions = "IDLE";
-				mixer.clipAction( Player_anim_WALK ).stop(); //joue l'animation chargé
 				mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
+			}
+
+			function test() {
+				scene.children[2].rotation.y = Math.PI / 1.25;
 			}
 
 			function buildGui() {
@@ -197,13 +228,16 @@
 				gui = new GUI();
 
 				const params = { //définie les paramètre que va afficher le gui
-					marcher: marcher, //appelle la fonction jour
-					stop: stop, //appelle la fonction midi
+					marcher: marcher,
+					stop: stop,
+					test: test,
 				};
 
-				gui.add( params, 'marcher'); // créer le bouton midi
+				gui.add( params, 'marcher');
 
-				gui.add( params, 'stop'); // créer le bouton midi
+				gui.add( params, 'stop');
+
+				gui.add( params, 'test');
 
 				gui.open();
 
@@ -234,20 +268,67 @@
 				renderer.render( scene, camera );
 
 				if (mixer != null) {
-					if (verif_actions == "walk") {
+					if (verif_actions == "WALK"
+					&& scene.children[2].position.x < -23.1000000000002
+					&& scene.children[2].position.y < -1.150999999999868
+					&& scene.children[2].position.z == 31)
+					{ // phase de montée 1
 						scene.children[2].translateZ(0.01);
 						scene.children[2].translateY(0.00210);
+						console.log("z : "+scene.children[2].position.z+"/ y : "+scene.children[2].position.y+" / x : "+ scene.children[2].position.x);
 
-
-					} else if (verif_actions == "walk" && scene.children[2].position.y >= -1.1530) {
+					} else if (verif_actions == "WALK"
+					&& scene.children[2].position.x >= -24
+					&& scene.children[2].position.y >= -2
+					&& scene.children[2].position.x < -21.69999999999998
+					&& scene.children[2].position.y < -0.859799999999864
+					&& scene.children[2].position.z == 31)
+					{ // phase de montée 2
 						scene.children[2].translateZ(0.01);
-						scene.children[2].translateY(0.00210);
-						//console.log(scene.children[2].position.y);
-					
+						scene.children[2].translateY(0.00208);
+						console.log("z : "+scene.children[2].position.z+"/ y : "+scene.children[2].position.y+" / x : "+ scene.children[2].position.x);
+
+					} else if (verif_actions == "WALK"
+					&& scene.children[2].position.x >= -22
+					&& scene.children[2].position.y >= -2
+					&& scene.children[2].position.x < -16.659999999998774
+					&& scene.children[2].position.y < -0.35579999999986356
+					&& scene.children[2].position.z == 31)
+					{ // phase de montée 3
+						scene.children[2].translateZ(0.01);
+						scene.children[2].translateY(0.00102);
+						console.log(scene.children[2].position.y+" / "+ scene.children[2].position.x);
+
+					} else if (verif_actions == "WALK"
+					&& scene.children[2].position.x >= -17
+					&& scene.children[2].position.y >= -1
+					&& scene.children[2].position.x < -13.129999999998734
+					&& scene.children[2].position.y < -0.19923999999985545
+					&& scene.children[2].position.z == 31)
+					{  // phase de montée 4
+						scene.children[2].translateZ(0.01);
+						scene.children[2].translateY(0.00043);
+						console.log("z : "+scene.children[2].position.z+"/ y : "+scene.children[2].position.y+" / x : "+ scene.children[2].position.x);
+
+					} else if (verif_actions == "WALK"
+					&& scene.children[2].position.x >= -14
+					&& scene.children[2].position.x < -10.568589895005978 )
+					{  // phase de descente 1
+						if (tmp == 0) {
+							scene.children[2].rotation.y = Math.PI / 1.25;
+							tmp = 1;
+						}
+						scene.children[2].translateZ(0.01);
+						scene.children[2].translateY(-0.00113);
+						scene.children[2].translateX(0.0006);
+						console.log("z : "+scene.children[2].position.z+"/ y : "+scene.children[2].position.y+" / x : "+ scene.children[2].position.x);
 					}
+
 					let delta = clock.getDelta(); // fait le delta avec la clock n-1
 					mixer.update(delta);	//actualise l'animation
+
 				}
+
 				if (mixerWorld != null) {
 					let deltaWorld = clockWorld.getDelta(); // fait le delta avec la clock n-1
 					mixerWorld.update(deltaWorld);	//actualise l'animation
