@@ -31,14 +31,24 @@
 			let gui;
 
 			let mixer                = null;     // Three.JS AnimationMixer
+			let mixerWorld                = null;
 			let Player_anim_IDLE     = undefined;    // Animation IDLE
 			let Player_anim_WALK     = undefined;    // Animation WALK
+			let Player_anim_WORLD     = undefined;    // Animation WALK
 
 			let clock = new THREE.Clock(); //lance l'horloge
+			let clockWorld = new THREE.Clock(); //lance l'horloge
+
+			let z_press = 90;
+			let s_press = 83;
+			let space_bar = 32;
+
+			let verif_actions;
 
 			init();
-			World();
+
 			Animations();
+			World();
 			GenObject();
 			buildGui()
 			animate();
@@ -86,13 +96,6 @@
 
 			}
 
-			function World(){
-			  //Génerat world
-			  new GLTFLoader().setPath( '3D/world/' ).load( 'scene.gltf', function ( gltf ) {
-			      scene.add( gltf.scene );
-			    } );
-			}
-
 			function Animations() {
 				//generate animation : WALK
 				new GLTFLoader().setPath( '3D/animations/gltf/' ).load( 'Walking.glb', function ( gltf ) {
@@ -109,12 +112,38 @@
 						Player_anim_IDLE = gltf.animations[0] ; // first animation
 
 				} );
+
+				//generate animation : WORLD
+				new GLTFLoader().setPath( '3D/world/' ).load( 'scene.gltf', function ( gltf ) {
+
+						//------------Anims-------------------------------
+						Player_anim_WORLD = gltf.animations[0] ; // first animation
+
+
+
+				} );
+			}
+
+			function World(){
+			  //Génerat world
+			  new GLTFLoader().setPath( '3D/world/' ).load( 'scene.gltf', function ( gltf ) {
+
+					// ---------------- ANIMATIONMIXER----------------
+					mixerWorld = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
+
+
+					//------------Anims-------------------------------
+					Player_anim_WORLD = gltf.animations[0] ; // first animation
+
+					mixerWorld.clipAction( Player_anim_WORLD ).play(); //joue l'animation chargé
+
+			      scene.add( gltf.scene );
+			    } );
 			}
 
 			function GenObject() {
 
-
-				//generate charactere : MOUSEY + set animation
+				//generate charactere : MOUSEY + set default animation
 
 				new GLTFLoader().setPath( '3D/Characters/Mousey/' ).load( 'Mousey.glb', function ( gltf ) {
 
@@ -133,6 +162,36 @@
 					} );
 			}
 
+			//Keyboard Controls
+
+			document.onkeydown = function(e) {
+						if (e.keyCode == z_press){
+							marcher();
+						} else if (e.keyCode == space_bar) {
+							stop();
+						} else if (e.keyCode == s_press) {
+
+						}
+				}
+
+			function marcher() {
+				verif_actions = "walk";
+				mixer.clipAction( Player_anim_IDLE ).stop(); //joue l'animation chargé
+				mixer.clipAction( Player_anim_WALK ).play(); //joue l'animation chargé
+			}
+
+			function reculer() {
+				verif_actions = "IDLE";
+				mixer.clipAction( Player_anim_WALK ).stop(); //joue l'animation chargé
+				mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
+			}
+
+			function stop() {
+				verif_actions = "IDLE";
+				mixer.clipAction( Player_anim_WALK ).stop(); //joue l'animation chargé
+				mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
+			}
+
 			function buildGui() {
 
 				gui = new GUI();
@@ -148,14 +207,6 @@
 
 				gui.open();
 
-			}
-
-			function marcher() {
-				console.log("marcher : OK");
-			}
-
-			function stop() {
-				console.log("stop : OK");
 			}
 
 			function onWindowResize() {
@@ -177,13 +228,29 @@
 
 			}
 
+
 			function render() {
 
 				renderer.render( scene, camera );
 
 				if (mixer != null) {
+					if (verif_actions == "walk") {
+						scene.children[2].translateZ(0.01);
+						scene.children[2].translateY(0.00210);
+
+
+					} else if (verif_actions == "walk" && scene.children[2].position.y >= -1.1530) {
+						scene.children[2].translateZ(0.01);
+						scene.children[2].translateY(0.00210);
+						//console.log(scene.children[2].position.y);
+					
+					}
 					let delta = clock.getDelta(); // fait le delta avec la clock n-1
 					mixer.update(delta);	//actualise l'animation
+				}
+				if (mixerWorld != null) {
+					let deltaWorld = clockWorld.getDelta(); // fait le delta avec la clock n-1
+					mixerWorld.update(deltaWorld);	//actualise l'animation
 				}
 
 				stats.update();
