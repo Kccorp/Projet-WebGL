@@ -41,17 +41,17 @@
 			let clockWorld = new THREE.Clock(); //lance l'horloge
 
 			let z_press = 90;
-			let s_press = 83;
+			let s_press = 74;
 			let space_bar = 32;
 
 			let verif_actions, tmp = 0;
 
 
 			init();
-
 			Animations();
 			World();
 			GenObject();
+			GenMoai();
 			buildGui()
 			animate();
 
@@ -83,7 +83,7 @@
 				controls = new OrbitControls( camera, renderer.domElement );
 				controls.enableDamping = true;
 				controls.minDistance = 0.5;
-				controls.maxDistance = 200;
+			  controls.maxDistance = 200;
 				controls.target.set( -40, -5, 30 );
 				controls.update();
 
@@ -175,8 +175,29 @@
 					} );
 			}
 
+			function GenMoai() {
 
+				//generate charactere : Moai + set default animation
+				new GLTFLoader().setPath( '3D/Characters/Moai/' ).load( 'Moai.glb', function ( gltf ) {
 
+						gltf.scene.translateX(-11);
+						gltf.scene.translateY(-2);
+						gltf.scene.translateZ(22);
+						gltf.scene.scale.x = 0.3
+						gltf.scene.scale.y = 0.3
+						gltf.scene.scale.z = 0.3
+						/*gltf.scene.translateX(-24.51);
+						gltf.scene.translateY(-1.4470999999998666 );
+						gltf.scene.translateZ(31);*/
+						/*gltf.scene.translateX(-14.589999999998703);
+						gltf.scene.translateY(-0.2620199999998567);
+						gltf.scene.translateZ(31);*/
+
+						//gltf.scene.rotation.y = Math.PI / 2;
+
+						scene.add( gltf.scene );
+					} );
+			}
 
 			//Keyboard Controls
 			document.onkeydown = function(e) {
@@ -207,6 +228,7 @@
 				}
 				verif_actions = "JUMP";
 				mixer.clipAction( Player_anim_JUMP ).play(); //joue l'animation chargé
+
 			}
 
 			function stop() {
@@ -219,10 +241,6 @@
 				mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
 			}
 
-			function test() {
-				scene.children[2].rotation.y = Math.PI / 1.25;
-			}
-
 			function buildGui() {
 
 				gui = new GUI();
@@ -230,14 +248,11 @@
 				const params = { //définie les paramètre que va afficher le gui
 					marcher: marcher,
 					stop: stop,
-					test: test,
 				};
 
 				gui.add( params, 'marcher');
 
 				gui.add( params, 'stop');
-
-				gui.add( params, 'test');
 
 				gui.open();
 
@@ -262,11 +277,7 @@
 
 			}
 
-
-			function render() {
-
-				renderer.render( scene, camera );
-
+			function roadPart1(){
 				if (mixer != null) {
 					if (verif_actions == "WALK"
 					&& scene.children[2].position.x < -23.1000000000002
@@ -275,7 +286,7 @@
 					{ // phase de montée 1
 						scene.children[2].translateZ(0.01);
 						scene.children[2].translateY(0.00210);
-						console.log("z : "+scene.children[2].position.z+"/ y : "+scene.children[2].position.y+" / x : "+ scene.children[2].position.x);
+
 
 					} else if (verif_actions == "WALK"
 					&& scene.children[2].position.x >= -24
@@ -286,7 +297,7 @@
 					{ // phase de montée 2
 						scene.children[2].translateZ(0.01);
 						scene.children[2].translateY(0.00208);
-						console.log("z : "+scene.children[2].position.z+"/ y : "+scene.children[2].position.y+" / x : "+ scene.children[2].position.x);
+
 
 					} else if (verif_actions == "WALK"
 					&& scene.children[2].position.x >= -22
@@ -297,7 +308,7 @@
 					{ // phase de montée 3
 						scene.children[2].translateZ(0.01);
 						scene.children[2].translateY(0.00102);
-						console.log(scene.children[2].position.y+" / "+ scene.children[2].position.x);
+
 
 					} else if (verif_actions == "WALK"
 					&& scene.children[2].position.x >= -17
@@ -308,7 +319,7 @@
 					{  // phase de montée 4
 						scene.children[2].translateZ(0.01);
 						scene.children[2].translateY(0.00043);
-						console.log("z : "+scene.children[2].position.z+"/ y : "+scene.children[2].position.y+" / x : "+ scene.children[2].position.x);
+
 
 					} else if (verif_actions == "WALK"
 					&& scene.children[2].position.x >= -14
@@ -321,7 +332,32 @@
 						scene.children[2].translateZ(0.01);
 						scene.children[2].translateY(-0.00113);
 						scene.children[2].translateX(0.0006);
-						console.log("z : "+scene.children[2].position.z+"/ y : "+scene.children[2].position.y+" / x : "+ scene.children[2].position.x);
+
+
+					} else if (verif_actions == "WALK"
+					&& scene.children[2].position.x >= -11
+					&& scene.children[2].position.z <= 27.5
+				  && scene.children[2].position.x < -8.708589895006018)
+					{  // phase de descente 2
+						if (tmp == 1) {
+							scene.children[2].rotation.y = Math.PI / 2;
+							tmp = 2;
+						}
+						scene.children[2].translateZ(0.01);
+						scene.children[2].translateY(-0.0023);
+
+
+					} else if (verif_actions == "WALK"
+					&& scene.children[2].position.x >= -9
+					&& scene.children[2].position.x < -7.528589895006043)
+					{  // phase de descente 3
+
+						scene.children[2].translateZ(0.01);
+						scene.children[2].translateY(-0.005);
+
+					}
+					else if (verif_actions == "WALK") { //FIN
+						stop();
 					}
 
 					let delta = clock.getDelta(); // fait le delta avec la clock n-1
@@ -333,6 +369,13 @@
 					let deltaWorld = clockWorld.getDelta(); // fait le delta avec la clock n-1
 					mixerWorld.update(deltaWorld);	//actualise l'animation
 				}
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+				roadPart1();
 
 				stats.update();
 			}
