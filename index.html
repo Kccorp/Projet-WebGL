@@ -31,10 +31,10 @@
 			let gui;
 
 			let mixer                = null;     // Three.JS AnimationMixer
-			let mixerWorld                = null;
+			let mixerWorld           = null;
 			let Player_anim_IDLE     = undefined;    // Animation IDLE
 			let Player_anim_WALK     = undefined;    // Animation WALK
-			let Player_anim_WORLD     = undefined;    // Animation WALK
+			let Player_anim_WORLD    = undefined;    // Animation WALK
 			let Player_anim_JUMP     = undefined;    // Animation WALK
 
 			let clock = new THREE.Clock(); //lance l'horloge
@@ -45,6 +45,7 @@
 			let space_bar = 32;
 
 			let verif_actions, tmp = 0;
+			let Mousey;
 
 
 			init();
@@ -52,8 +53,11 @@
 			World();
 			GenObject();
 			GenMoai();
+			GenGandalf();
+			GenGandalfText()
 			buildGui()
 			animate();
+
 
 			function init() {
 
@@ -151,7 +155,7 @@
 
 				//generate charactere : MOUSEY + set default animation
 
-				new GLTFLoader().setPath( '3D/Characters/Mousey/' ).load( 'Mousey.glb', function ( gltf ) {
+				new GLTFLoader().setPath( '3D/Objets/Mousey/' ).load( 'Mousey.glb', function ( gltf ) {
 
 						gltf.scene.translateX(-40);
 						gltf.scene.translateY(-4.7);
@@ -171,14 +175,18 @@
 						//------------Anims-------------------------------
 						mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
 
-						scene.add( gltf.scene );
+						gltf.scene.name = "Mousey";
+						name = "Mousey";
+
+						scene.add( gltf.scene);
 					} );
+
 			}
 
 			function GenMoai() {
 
 				//generate charactere : Moai + set default animation
-				new GLTFLoader().setPath( '3D/Characters/Moai/' ).load( 'Moai.glb', function ( gltf ) {
+				new GLTFLoader().setPath( '3D/Objets/Moai/' ).load( 'Moai.glb', function ( gltf ) {
 
 						gltf.scene.translateX(-11);
 						gltf.scene.translateY(-2);
@@ -186,14 +194,42 @@
 						gltf.scene.scale.x = 0.3
 						gltf.scene.scale.y = 0.3
 						gltf.scene.scale.z = 0.3
-						/*gltf.scene.translateX(-24.51);
-						gltf.scene.translateY(-1.4470999999998666 );
-						gltf.scene.translateZ(31);*/
-						/*gltf.scene.translateX(-14.589999999998703);
-						gltf.scene.translateY(-0.2620199999998567);
-						gltf.scene.translateZ(31);*/
 
-						//gltf.scene.rotation.y = Math.PI / 2;
+						scene.add( gltf.scene );
+					} );
+			}
+
+			function GenGandalf() {
+
+				//generate charactere : Moai + set default animation
+				new GLTFLoader().setPath( '3D/Objets/gandalf/' ).load( 'gandalf.glb', function ( gltf ) {
+
+						gltf.scene.translateX(15);
+						gltf.scene.translateY(-1);
+						gltf.scene.translateZ(28.4);
+						gltf.scene.scale.x = 0.03
+						gltf.scene.scale.y = 0.03
+						gltf.scene.scale.z = 0.03
+
+						gltf.scene.rotation.y = Math.PI / -2;
+
+						scene.add( gltf.scene );
+					} );
+			}
+
+			function GenGandalfText() {
+
+				//generate charactere : Moai + set default animation
+				new GLTFLoader().setPath( '3D/Objets/Text/' ).load( 'gandalfTxt.glb', function ( gltf ) {
+
+						gltf.scene.translateX(15);
+						gltf.scene.translateY(0.5);
+						gltf.scene.translateZ(26.5);
+						gltf.scene.scale.x = 0.5
+						gltf.scene.scale.y = 0.5
+						gltf.scene.scale.z = 0.5
+
+						gltf.scene.rotation.y = Math.PI / -2;
 
 						scene.add( gltf.scene );
 					} );
@@ -218,6 +254,14 @@
 				}
 				verif_actions = "WALK";
 				mixer.clipAction( Player_anim_WALK ).play(); //joue l'animation chargé
+
+
+				for (var i = 0; i < scene.children.length; i++) { //identifie le numéro childen de la souris
+					if (scene.children[i].name == "Mousey") {
+						Mousey = i;
+					}
+				}
+
 			}
 
 			function jump() {
@@ -280,80 +324,80 @@
 			function roadPart1(){
 				if (mixer != null) {
 					if (verif_actions == "WALK"
-					&& scene.children[2].position.x < -23.1000000000002
-					&& scene.children[2].position.y < -1.150999999999868
-					&& scene.children[2].position.z == 31)
+					&& scene.children[Mousey].position.x < -23.1000000000002
+					&& scene.children[Mousey].position.y < -1.150999999999868
+					&& scene.children[Mousey].position.z == 31)
 					{ // phase de montée 1
-						scene.children[2].translateZ(0.01);
-						scene.children[2].translateY(0.00210);
+						scene.children[Mousey].translateZ(0.01);
+						scene.children[Mousey].translateY(0.00210);
 
 
 					} else if (verif_actions == "WALK"
-					&& scene.children[2].position.x >= -24
-					&& scene.children[2].position.y >= -2
-					&& scene.children[2].position.x < -21.69999999999998
-					&& scene.children[2].position.y < -0.859799999999864
-					&& scene.children[2].position.z == 31)
+					&& scene.children[Mousey].position.x >= -24
+					&& scene.children[Mousey].position.y >= -2
+					&& scene.children[Mousey].position.x < -21.69999999999998
+					&& scene.children[Mousey].position.y < -0.859799999999864
+					&& scene.children[Mousey].position.z == 31)
 					{ // phase de montée 2
-						scene.children[2].translateZ(0.01);
-						scene.children[2].translateY(0.00208);
+						scene.children[Mousey].translateZ(0.01);
+						scene.children[Mousey].translateY(0.00208);
 
 
 					} else if (verif_actions == "WALK"
-					&& scene.children[2].position.x >= -22
-					&& scene.children[2].position.y >= -2
-					&& scene.children[2].position.x < -16.659999999998774
-					&& scene.children[2].position.y < -0.35579999999986356
-					&& scene.children[2].position.z == 31)
+					&& scene.children[Mousey].position.x >= -22
+					&& scene.children[Mousey].position.y >= -2
+					&& scene.children[Mousey].position.x < -16.659999999998774
+					&& scene.children[Mousey].position.y < -0.35579999999986356
+					&& scene.children[Mousey].position.z == 31)
 					{ // phase de montée 3
-						scene.children[2].translateZ(0.01);
-						scene.children[2].translateY(0.00102);
+						scene.children[Mousey].translateZ(0.01);
+						scene.children[Mousey].translateY(0.00102);
 
 
 					} else if (verif_actions == "WALK"
-					&& scene.children[2].position.x >= -17
-					&& scene.children[2].position.y >= -1
-					&& scene.children[2].position.x < -13.129999999998734
-					&& scene.children[2].position.y < -0.19923999999985545
-					&& scene.children[2].position.z == 31)
+					&& scene.children[Mousey].position.x >= -17
+					&& scene.children[Mousey].position.y >= -1
+					&& scene.children[Mousey].position.x < -13.129999999998734
+					&& scene.children[Mousey].position.y < -0.19923999999985545
+					&& scene.children[Mousey].position.z == 31)
 					{  // phase de montée 4
-						scene.children[2].translateZ(0.01);
-						scene.children[2].translateY(0.00043);
+						scene.children[Mousey].translateZ(0.01);
+						scene.children[Mousey].translateY(0.00043);
 
 
 					} else if (verif_actions == "WALK"
-					&& scene.children[2].position.x >= -14
-					&& scene.children[2].position.x < -10.568589895005978 )
+					&& scene.children[Mousey].position.x >= -14
+					&& scene.children[Mousey].position.x < -10.568589895005978 )
 					{  // phase de descente 1
 						if (tmp == 0) {
-							scene.children[2].rotation.y = Math.PI / 1.25;
+							scene.children[Mousey].rotation.y = Math.PI / 1.25;
 							tmp = 1;
 						}
-						scene.children[2].translateZ(0.01);
-						scene.children[2].translateY(-0.00113);
-						scene.children[2].translateX(0.0006);
+						scene.children[Mousey].translateZ(0.01);
+						scene.children[Mousey].translateY(-0.00113);
+						scene.children[Mousey].translateX(0.0006);
 
 
 					} else if (verif_actions == "WALK"
-					&& scene.children[2].position.x >= -11
-					&& scene.children[2].position.z <= 27.5
-				  && scene.children[2].position.x < -8.708589895006018)
+					&& scene.children[Mousey].position.x >= -11
+					&& scene.children[Mousey].position.z <= 27.5
+				  && scene.children[Mousey].position.x < -8.708589895006018)
 					{  // phase de descente 2
 						if (tmp == 1) {
-							scene.children[2].rotation.y = Math.PI / 2;
+							scene.children[Mousey].rotation.y = Math.PI / 2;
 							tmp = 2;
 						}
-						scene.children[2].translateZ(0.01);
-						scene.children[2].translateY(-0.0023);
+						scene.children[Mousey].translateZ(0.01);
+						scene.children[Mousey].translateY(-0.0023);
 
 
 					} else if (verif_actions == "WALK"
-					&& scene.children[2].position.x >= -9
-					&& scene.children[2].position.x < -7.528589895006043)
+					&& scene.children[Mousey].position.x >= -9
+					&& scene.children[Mousey].position.x < -7.528589895006043)
 					{  // phase de descente 3
 
-						scene.children[2].translateZ(0.01);
-						scene.children[2].translateY(-0.005);
+						scene.children[Mousey].translateZ(0.01);
+						scene.children[Mousey].translateY(-0.005);
 
 					}
 					else if (verif_actions == "WALK") { //FIN
