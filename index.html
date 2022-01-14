@@ -20,7 +20,6 @@
 			import { OrbitControls } from './three.js-master/examples/jsm/controls/OrbitControls.js';
 			import { GLTFLoader } from './three.js-master/examples/jsm/loaders/GLTFLoader.js';
 			import { RoomEnvironment } from './three.js-master/examples/jsm/environments/RoomEnvironment.js';
-			import { FBXLoader } from './three.js-master/examples/jsm/loaders/FBXLoader.js';
 			import { GUI } from './three.js-master/examples/jsm/libs/dat.gui.module.js';
 
 			import Stats from './three.js-master/examples/jsm/libs/stats.module.js'
@@ -28,20 +27,25 @@
 
 			let camera, scene, renderer, controls, stats;
 
+			let spotLight, lightHelper, shadowCameraHelper;
+
 			let gui;
 
 			let mixer                = null;     // Three.JS AnimationMixer
 			let mixerWorld           = null;
+			let mixerDancer          = null;
 			let Player_anim_IDLE     = undefined;    // Animation IDLE
 			let Player_anim_WALK     = undefined;    // Animation WALK
 			let Player_anim_WORLD    = undefined;    // Animation WALK
 			let Player_anim_JUMP     = undefined;    // Animation WALK
+			let Player_anim_DANCE = undefined;
 
 			let clock = new THREE.Clock(); //lance l'horloge
 			let clockWorld = new THREE.Clock(); //lance l'horloge
+			let clockDance = new THREE.Clock(); //lance l'horloge
 
 			let z_press = 90;
-			let s_press = 74;
+			let j_press = 74;
 			let space_bar = 32;
 
 			let verif_actions, tmp = 0;
@@ -53,9 +57,10 @@
 			World();
 			GenObject();
 			GenMoai();
+			GenDancer();
 			GenGandalf();
-			GenGandalfText()
-			buildGui()
+			GenGandalfText();
+			buildGui();
 			animate();
 
 
@@ -78,11 +83,11 @@
 				renderer.outputEncoding = THREE.sRGBEncoding;
 				container.appendChild( renderer.domElement );
 
-				const environment = new RoomEnvironment();
+				/*const environment = new RoomEnvironment();
 				const pmremGenerator = new THREE.PMREMGenerator( renderer );
 
 				scene.background = new THREE.Color( 0xbbbbbb );
-				scene.environment = pmremGenerator.fromScene( environment ).texture;
+				scene.environment = pmremGenerator.fromScene( environment ).texture;*/
 
 				controls = new OrbitControls( camera, renderer.domElement );
 				controls.enableDamping = true;
@@ -91,8 +96,36 @@
 				controls.target.set( -40, -5, 30 );
 				controls.update();
 
-				const axesHelper = new THREE.AxesHelper(1000);
-				scene.add( axesHelper );
+				const ambient = new THREE.AmbientLight( 0xffffff, 0.3 ); // defini la lumiere ambiante la couleur et l'intensité
+				scene.add( ambient );
+
+				spotLight = new THREE.SpotLight( 0xffffff, 1 ); // defini la lumiere principal la couleur et l'intensité
+				spotLight.position.set( 35, 50, 0 ); //la position
+				spotLight.angle = THREE.Math.degToRad(60); // l'angle de la lumiere
+				spotLight.penumbra = 0.1; // la pénombre
+				spotLight.decay = 2; //la dureté de la lumiere
+				spotLight.distance = 3500; // la distance d'affichage de la lumiere
+
+				spotLight.castShadow = true; //autorise les ombres et les definie
+				spotLight.shadow.mapSize.width = 1024;
+				spotLight.shadow.mapSize.height = 1024;
+				spotLight.shadow.camera.near = 10;
+				spotLight.shadow.camera.far = 200;
+				spotLight.shadow.focus = 1;
+				//spotLight.shadow.radius = 1;
+
+				renderer.shadowMapEnabled = true;
+        renderer.shadowMapSoft = true;
+				renderer.shadowMap.enabled = true
+
+				scene.add(spotLight);
+
+				scene.background = new THREE.Color( 0xbbbbbb );
+
+				lightHelper = new THREE.SpotLightHelper( spotLight ); // défini les lignes d'aides sur la lumiere déjà ajouté
+				scene.add( lightHelper );
+				shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera ); // défini les lignes d'aides sur la direction de l'ombre
+				scene.add( shadowCameraHelper );
 
 				// stats
 				stats = new Stats();
@@ -120,7 +153,7 @@
 				} );
 
 				//generate animation : WORLD
-				new GLTFLoader().setPath( '3D/world/' ).load( 'scene.gltf', function ( gltf ) {
+				new GLTFLoader().setPath( '3D/world/' ).load( 'scene.glb', function ( gltf ) {
 
 						//------------Anims-------------------------------
 						Player_anim_WORLD = gltf.animations[0] ; // first animation
@@ -136,7 +169,15 @@
 
 			function World(){
 			  //Génerat world
-			  new GLTFLoader().setPath( '3D/world/' ).load( 'scene.gltf', function ( gltf ) {
+			  new GLTFLoader().setPath( '3D/world/' ).load( 'scene2.glb', function ( gltf ) {
+
+					console.log(gltf);
+					gltf.scene.traverse(function (child) {
+            if (child.isMesh) {
+                 child.receiveShadow = true;
+                 child.castShadow = true;
+             }
+         	})
 
 					// ---------------- ANIMATIONMIXER----------------
 					mixerWorld = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
@@ -144,6 +185,7 @@
 
 					//------------Anims-------------------------------
 					Player_anim_WORLD = gltf.animations[0] ; // first animation
+
 
 					mixerWorld.clipAction( Player_anim_WORLD ).play(); //joue l'animation chargé
 
@@ -160,12 +202,20 @@
 						gltf.scene.translateX(-40);
 						gltf.scene.translateY(-4.7);
 						gltf.scene.translateZ(31);
+
+						gltf.scene.traverse(function (child) {
+	            if (child.isMesh) {
+	                 child.receiveShadow = true;
+	                 child.castShadow = true;
+	             }
+	         })
 						/*gltf.scene.translateX(-24.51);
 						gltf.scene.translateY(-1.4470999999998666 );
 						gltf.scene.translateZ(31);*/
 						/*gltf.scene.translateX(-14.589999999998703);
 						gltf.scene.translateY(-0.2620199999998567);
 						gltf.scene.translateZ(31);*/
+
 
 						gltf.scene.rotation.y = Math.PI / 2;
 
@@ -176,7 +226,6 @@
 						mixer.clipAction( Player_anim_IDLE ).play(); //joue l'animation chargé
 
 						gltf.scene.name = "Mousey";
-						name = "Mousey";
 
 						scene.add( gltf.scene);
 					} );
@@ -191,9 +240,44 @@
 						gltf.scene.translateX(-11);
 						gltf.scene.translateY(-2);
 						gltf.scene.translateZ(22);
-						gltf.scene.scale.x = 0.3
-						gltf.scene.scale.y = 0.3
-						gltf.scene.scale.z = 0.3
+						gltf.scene.scale.x = 0.3;
+						gltf.scene.scale.y = 0.3;
+						gltf.scene.scale.z = 0.3;
+
+						gltf.scene.traverse(function (child) {
+	            if (child.isMesh) {
+	                 child.receiveShadow = true;
+	                 child.castShadow = true;
+	             }
+	         })
+
+						scene.add( gltf.scene );
+					} );
+			}
+
+			function GenDancer() {
+
+				//generate charactere : Moai + set default animation
+				new GLTFLoader().setPath( '3D/Objets/Dancer/' ).load( 'dancer.glb', function ( gltf ) {
+
+						gltf.scene.translateX(-17);
+						gltf.scene.translateY(-0.3);
+						gltf.scene.translateZ(18);
+
+						// ---------------- ANIMATIONMIXER----------------
+		 				mixerDancer = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
+
+						//------------Anims-------------------------------
+						Player_anim_DANCE = gltf.animations[0] ; // first animation
+
+						mixerDancer.clipAction( Player_anim_DANCE ).play(); //joue l'animation chargé
+
+						gltf.scene.traverse(function (child) {
+	            if (child.isMesh) {
+	                 child.receiveShadow = true;
+	                 child.castShadow = true;
+	             }
+	         })
 
 						scene.add( gltf.scene );
 					} );
@@ -213,6 +297,13 @@
 
 						gltf.scene.rotation.y = Math.PI / -2;
 
+						gltf.scene.traverse(function (child) {
+	            if (child.isMesh) {
+	                 child.receiveShadow = true;
+	                 child.castShadow = true;
+	             }
+	         })
+
 						scene.add( gltf.scene );
 					} );
 			}
@@ -231,6 +322,13 @@
 
 						gltf.scene.rotation.y = Math.PI / -2;
 
+						gltf.scene.traverse(function (child) {
+	            if (child.isMesh) {
+	                 child.receiveShadow = true;
+	                 child.castShadow = true;
+	             }
+	         })
+
 						scene.add( gltf.scene );
 					} );
 			}
@@ -241,7 +339,7 @@
 							marcher();
 						} else if (e.keyCode == space_bar) {
 							stop();
-						} else if (e.keyCode == s_press) {
+						} else if (e.keyCode == j_press) {
 							jump();
 						}
 				}
@@ -271,7 +369,9 @@
 					mixer.clipAction( Player_anim_IDLE ).stop(); //joue l'animation chargé
 				}
 				verif_actions = "JUMP";
-				mixer.clipAction( Player_anim_JUMP ).play(); //joue l'animation chargé
+				mixer.clipAction( Player_anim_JUMP ).setLoop( THREE.LoopOnce ).play(); //joue l'animation chargé
+				mixer.clipAction( Player_anim_JUMP ).clampWhenFinished = true;
+
 
 			}
 
@@ -290,13 +390,13 @@
 				gui = new GUI();
 
 				const params = { //définie les paramètre que va afficher le gui
-					marcher: marcher,
-					stop: stop,
+					"marcher (z)": marcher,
+					"stop (space_bar)": stop,
 				};
 
-				gui.add( params, 'marcher');
+				gui.add( params, 'marcher (z)');
 
-				gui.add( params, 'stop');
+				gui.add( params, 'stop (space_bar)');
 
 				gui.open();
 
@@ -331,6 +431,7 @@
 						scene.children[Mousey].translateZ(0.01);
 						scene.children[Mousey].translateY(0.00210);
 
+						console.log("z : "+scene.children[Mousey].position.z+" / y : "+scene.children[Mousey].position.y);
 
 					} else if (verif_actions == "WALK"
 					&& scene.children[Mousey].position.x >= -24
@@ -412,6 +513,10 @@
 				if (mixerWorld != null) {
 					let deltaWorld = clockWorld.getDelta(); // fait le delta avec la clock n-1
 					mixerWorld.update(deltaWorld);	//actualise l'animation
+				}
+				if (mixerDancer != null) {
+					let deltaWorld = clockDance.getDelta(); // fait le delta avec la clock n-1
+					mixerDancer.update(deltaWorld);	//actualise l'animation
 				}
 			}
 
