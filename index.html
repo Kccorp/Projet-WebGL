@@ -4,14 +4,26 @@
 		<title>three.js webgl - GLTFloader + sheen</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<style>
-			body {
-				background: #bbbbbb;
-			}
-		</style>
+		<link rel="stylesheet" href="style.css">
+		<!--css bootstrap-->
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 	</head>
 
 	<body>
+
+		<div id="blocker">
+			<div id="instructions">
+				<p style="font-size:36px">
+					Click to play
+				</p>
+				<p>
+					Move: WASD<br/>
+					Jump: SPACE<br/>
+					Look: MOUSE
+				</p>
+			</div>
+		</div>
+
 
 		<script type="module">
 
@@ -21,11 +33,12 @@
 			import { GLTFLoader } from './three.js-master/examples/jsm/loaders/GLTFLoader.js';
 			import { RoomEnvironment } from './three.js-master/examples/jsm/environments/RoomEnvironment.js';
 			import { GUI } from './three.js-master/examples/jsm/libs/dat.gui.module.js';
+			import { PointerLockControls } from './three.js-master/examples/jsm/controls/PointerLockControls.js';
 
 			import Stats from './three.js-master/examples/jsm/libs/stats.module.js'
 
 
-			let camera, scene, renderer, controls, stats;
+			let camera, scene, renderer, controls, stats, menu;
 
 			let spotLight, lightHelper, shadowCameraHelper;
 
@@ -51,13 +64,22 @@
 			let verif_actions, tmp = 0;
 			let Mousey;
 
+			var loadingScreen = {
+				scene: new THREE.Scene(),
+				camera: new THREE.PerspectiveCamera(90, 1280/720, 0.1, 100),
+				/*box: new THREE.Mesh(
+					new THREE.BoxGeometry(0.5,0.5,0.5),
+					new THREE.MeshBasicMaterial({ color:0x4444ff })
+				)*/
+			};
+			var loadingManager = null;
+			var RESOURCES_LOADED = false;
 
 			init();
 			Animations();
 			World();
 			GenObject();
 			GenMoai();
-			GenDancer();
 			GenGandalf();
 			GenGandalfText();
 			buildGui();
@@ -74,6 +96,11 @@
 				camera.lookAt(-40, -5, 30);
 
 				scene = new THREE.Scene();
+
+				wattingScreen();
+				overlay();
+
+
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -107,16 +134,15 @@
 				spotLight.distance = 3500; // la distance d'affichage de la lumiere
 
 				spotLight.castShadow = true; //autorise les ombres et les definie
-				spotLight.shadow.mapSize.width = 1024;
-				spotLight.shadow.mapSize.height = 1024;
-				spotLight.shadow.camera.near = 10;
+				spotLight.shadow.mapSize.width = 2048;
+				spotLight.shadow.mapSize.height = 2048;
+				//spotLight.shadow.camera.near = 10;
 				spotLight.shadow.camera.far = 200;
 				spotLight.shadow.focus = 1;
 				//spotLight.shadow.radius = 1;
 
-				renderer.shadowMapEnabled = true;
+				renderer.shadowMap.enabled = true;
         renderer.shadowMapSoft = true;
-				renderer.shadowMap.enabled = true
 
 				scene.add(spotLight);
 
@@ -133,6 +159,59 @@
 
 				window.addEventListener( 'resize', onWindowResize );
 
+			}
+
+			function wattingScreen(){
+				// Set up the loading screen's scene.
+				// It can be treated just like our main scene.
+				/*loadingScreen.box.position.set(0,0,5);
+				loadingScreen.camera.lookAt(loadingScreen.box.position);
+				loadingScreen.scene.add(loadingScreen.box);
+				*/
+				// Create a loading manager to set RESOURCES_LOADED when appropriate.
+				// Pass loadingManager to all resource loaders.
+				loadingManager = new THREE.LoadingManager();
+
+				loadingManager.onProgress = function(item, loaded, total){
+					const loadingScreen = document.getElementById( 'loading-screen' );
+					console.log(loadingScreen);
+					//console.log(loaded*100/total);
+				};
+
+				loadingManager.onLoad = function(){
+					console.log("loaded all resources");
+					RESOURCES_LOADED = true;
+				};
+			}
+
+			function overlay(){
+				menu = new PointerLockControls( camera, document.body );
+
+
+				const blocker = document.getElementById( 'blocker' );
+				const instructions = document.getElementById( 'instructions' );
+
+				instructions.addEventListener( 'click', function () {
+
+					menu.lock();
+
+				} );
+
+				menu.addEventListener( 'lock', function () {
+
+					instructions.style.display = 'none';
+					blocker.style.display = 'none';
+
+				} );
+
+				menu.addEventListener( 'unlock', function () {
+
+					blocker.style.display = 'block';
+					instructions.style.display = '';
+
+				} );
+
+				scene.add( menu.getObject() );
 			}
 
 			function Animations() {
@@ -153,7 +232,7 @@
 				} );
 
 				//generate animation : WORLD
-				new GLTFLoader().setPath( '3D/world/' ).load( 'scene.glb', function ( gltf ) {
+				new GLTFLoader().setPath( '3D/world/test/' ).load( 'scene2.gltf', function ( gltf ) {
 
 						//------------Anims-------------------------------
 						Player_anim_WORLD = gltf.animations[0] ; // first animation
@@ -169,7 +248,7 @@
 
 			function World(){
 			  //Génerat world
-			  new GLTFLoader().setPath( '3D/world/' ).load( 'scene2.glb', function ( gltf ) {
+			  new GLTFLoader(loadingManager).setPath( '3D/world/test/' ).load( 'scene2.gltf', function ( gltf ) {
 
 					console.log(gltf);
 					gltf.scene.traverse(function (child) {
@@ -189,7 +268,7 @@
 
 					mixerWorld.clipAction( Player_anim_WORLD ).play(); //joue l'animation chargé
 
-			      scene.add( gltf.scene );
+			    scene.add( gltf.scene );
 			    } );
 			}
 
@@ -197,7 +276,7 @@
 
 				//generate charactere : MOUSEY + set default animation
 
-				new GLTFLoader().setPath( '3D/Objets/Mousey/' ).load( 'Mousey.glb', function ( gltf ) {
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/Mousey/' ).load( 'Mousey.glb', function ( gltf ) {
 
 						gltf.scene.translateX(-40);
 						gltf.scene.translateY(-4.7);
@@ -235,7 +314,7 @@
 			function GenMoai() {
 
 				//generate charactere : Moai + set default animation
-				new GLTFLoader().setPath( '3D/Objets/Moai/' ).load( 'Moai.glb', function ( gltf ) {
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/Moai/' ).load( 'Moai.glb', function ( gltf ) {
 
 						gltf.scene.translateX(-11);
 						gltf.scene.translateY(-2);
@@ -255,38 +334,10 @@
 					} );
 			}
 
-			function GenDancer() {
-
-				//generate charactere : Moai + set default animation
-				new GLTFLoader().setPath( '3D/Objets/Dancer/' ).load( 'dancer.glb', function ( gltf ) {
-
-						gltf.scene.translateX(-17);
-						gltf.scene.translateY(-0.3);
-						gltf.scene.translateZ(18);
-
-						// ---------------- ANIMATIONMIXER----------------
-		 				mixerDancer = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
-
-						//------------Anims-------------------------------
-						Player_anim_DANCE = gltf.animations[0] ; // first animation
-
-						mixerDancer.clipAction( Player_anim_DANCE ).play(); //joue l'animation chargé
-
-						gltf.scene.traverse(function (child) {
-	            if (child.isMesh) {
-	                 child.receiveShadow = true;
-	                 child.castShadow = true;
-	             }
-	         })
-
-						scene.add( gltf.scene );
-					} );
-			}
-
 			function GenGandalf() {
 
 				//generate charactere : Moai + set default animation
-				new GLTFLoader().setPath( '3D/Objets/gandalf/' ).load( 'gandalf.glb', function ( gltf ) {
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/gandalf/' ).load( 'gandalf.glb', function ( gltf ) {
 
 						gltf.scene.translateX(15);
 						gltf.scene.translateY(-1);
@@ -311,7 +362,7 @@
 			function GenGandalfText() {
 
 				//generate charactere : Moai + set default animation
-				new GLTFLoader().setPath( '3D/Objets/Text/' ).load( 'gandalfTxt.glb', function ( gltf ) {
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/Text/' ).load( 'gandalfTxt.glb', function ( gltf ) {
 
 						gltf.scene.translateX(15);
 						gltf.scene.translateY(0.5);
@@ -412,6 +463,18 @@
 			}
 
 			function animate() {
+
+				// This block runs while resources are loading.
+				if( RESOURCES_LOADED == false ){
+					requestAnimationFrame(animate);
+
+					//loadingScreen.box.position.x -= 0.05;
+					//if( loadingScreen.box.position.x < -10 ) loadingScreen.box.position.x = 10;
+					//loadingScreen.box.position.y = Math.sin(loadingScreen.box.position.x);
+
+					renderer.render(loadingScreen.scene, loadingScreen.camera);
+					return; // Stop the function here.
+				}
 
 				requestAnimationFrame( animate );
 
