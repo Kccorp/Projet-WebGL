@@ -59,6 +59,8 @@
 			let verif_actions, tmp = 0;
 			let Mousey, Cam;
 
+			let soundPop, soundRiver, soundShire;
+
 			var loadingScreen = {
 				scene: new THREE.Scene(),
 				camera: new THREE.PerspectiveCamera(90, 1280/720, 0.1, 100),
@@ -159,31 +161,35 @@
 				camera.add( listener );
 
 				// create a global audio source
-				const soundShire = new THREE.Audio( listener );
-				const soundPop = new THREE.Audio( listener );
-				const soundRiver = new THREE.PositionalAudio( listener );
+				soundShire = new THREE.Audio( listener );
+				soundPop = new THREE.Audio( listener );
+				soundRiver = new THREE.PositionalAudio( listener );
 
 				// load a sound and set it as the Audio object's buffer
 				const audioLoader = new THREE.AudioLoader();
 				audioLoader.load( './musique/the-shire.mp3', function( buffer ) {
 					soundShire.setBuffer( buffer );
 					soundShire.setLoop( true );
-					soundShire.setVolume( 0.02 );
+					soundShire.setVolume( 0.01 );
 					soundShire.play();
 				});
 
 				audioLoader.load( './musique/pop.mp3', function( buffer ) {
 					soundPop.setBuffer( buffer );
-					soundPop.setLoop( true );
-					soundPop.setVolume(1);
+					soundPop.setLoop( false );
+					soundPop.setVolume(0.5);
 				});
 
 				audioLoader.load( './musique/river.mp3', function( buffer ) {
 					soundRiver.setBuffer( buffer );
+					soundRiver.setLoop( true );
 					soundRiver.setRefDistance( 0.5 );
+					soundRiver.setMaxDistance(1);
 					soundRiver.setVolume( 0.3 );
 					soundRiver.play();
 				});
+
+				console.log("le volume est de : "+ soundRiver.getVolume());
 				const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 				const material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
 				const cube = new THREE.Mesh( geometry, material );
@@ -232,13 +238,13 @@
 
 					instructions.style.display = 'none';
 					blocker.style.display = 'none';
-
 				} );
 
 				menu.addEventListener( 'unlock', function () {
 
 					blocker.style.display = 'block';
 					instructions.style.display = '';
+					stop();
 
 				} );
 
@@ -478,13 +484,31 @@
 				gui = new GUI();
 
 				const params = { //définie les paramètre que va afficher le gui
-					"marcher (z)": marcher,
-					"stop (space_bar)": stop,
+					"Volume musique d'ambiance": soundShire.getVolume(),
+					"Volume bruitage rivière": soundRiver.getVolume(),
+					"Distance bruitage rivière": soundRiver.getRefDistance(),
 				};
 
-				gui.add( params, 'marcher (z)');
+				gui.add( params, "Volume musique d'ambiance", 0, 0.1 ).onChange( function ( val ) {
 
-				gui.add( params, 'stop (space_bar)');
+					soundShire.setVolume( val );
+					render();
+
+				} );
+
+				gui.add( params, "Volume bruitage rivière", 0.03, 3 ).onChange( function ( val ) {
+
+					soundRiver.setVolume( val );
+					render();
+
+				} );
+
+				gui.add( params, "Distance bruitage rivière", 0, 5 ).onChange( function ( val ) {
+
+					soundRiver.setRefDistance( val );
+					render();
+
+				} );
 
 				gui.open();
 
