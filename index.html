@@ -11,7 +11,13 @@
 
 	<body>
 
-
+		<div id="blocker">
+			<div id="instructions">
+				<p style="font-size:36px">
+					Lancer l'histoire
+				</p>
+			</div>
+		</div>
 
 
 		<script type="module">
@@ -53,14 +59,14 @@
 			let verif_actions, tmp = 0;
 			let Mousey, Cam;
 
-			/*var loadingScreen = {
+			var loadingScreen = {
 				scene: new THREE.Scene(),
 				camera: new THREE.PerspectiveCamera(90, 1280/720, 0.1, 100),
-				/*box: new THREE.Mesh(
+				box: new THREE.Mesh(
 					new THREE.BoxGeometry(0.5,0.5,0.5),
 					new THREE.MeshBasicMaterial({ color:0x4444ff })
 				)
-			};*/
+			};
 			var loadingManager = null;
 			var RESOURCES_LOADED = false;
 
@@ -89,8 +95,8 @@
 
 				scene = new THREE.Scene();
 
-				//wattingScreen();
-				//overlay();
+				wattingScreen();
+				overlay();
 
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -174,8 +180,8 @@
 
 				audioLoader.load( './musique/river.mp3', function( buffer ) {
 					soundRiver.setBuffer( buffer );
-					soundRiver.setRefDistance( 1 );
-					soundRiver.setVolume( 0.5 );
+					soundRiver.setRefDistance( 0.5 );
+					soundRiver.setVolume( 0.3 );
 					soundRiver.play();
 				});
 				const geometry = new THREE.BoxGeometry( 1, 1, 1 );
@@ -185,6 +191,58 @@
 				cube.visible = false;
 				scene.add( cube );
 				cube.add(soundRiver);
+			}
+
+			function wattingScreen(){
+				// Set up the loading screen's scene.
+				// It can be treated just like our main scene.
+				/*loadingScreen.box.position.set(0,0,5);
+				loadingScreen.camera.lookAt(loadingScreen.box.position);
+				loadingScreen.scene.add(loadingScreen.box);
+				*/
+				// Create a loading manager to set RESOURCES_LOADED when appropriate.
+				// Pass loadingManager to all resource loaders.
+				loadingManager = new THREE.LoadingManager();
+
+				loadingManager.onProgress = function(item, loaded, total){
+					const loadingScreen = document.getElementById( 'loading-screen' );
+					console.log(loadingScreen);
+					//console.log(loaded*100/total);
+				};
+
+				loadingManager.onLoad = function(){
+					console.log("loaded all resources");
+					RESOURCES_LOADED = true;
+				};
+			}
+
+			function overlay(){
+				menu = new PointerLockControls( camera, document.body );
+
+				const blocker = document.getElementById( 'blocker' );
+				const instructions = document.getElementById( 'instructions' );
+
+				instructions.addEventListener( 'click', function () {
+
+					menu.lock();
+
+				} );
+
+				menu.addEventListener( 'lock', function () {
+
+					instructions.style.display = 'none';
+					blocker.style.display = 'none';
+
+				} );
+
+				menu.addEventListener( 'unlock', function () {
+
+					blocker.style.display = 'block';
+					instructions.style.display = '';
+
+				} );
+
+				scene.add( menu.getObject() );
 			}
 
 			function Animations() {
@@ -249,14 +307,14 @@
 
 				//generate charactere : MOUSEY + set default animation
 
-				new GLTFLoader().setPath( '3D/Objets/Mousey/' ).load( 'Mousey.glb', function ( gltf ) {
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/Mousey/' ).load( 'Mousey.glb', function ( gltf ) {
 
-						/*gltf.scene.translateX(-40);
+						gltf.scene.translateX(-40);
 						gltf.scene.translateY(-4.7);
-						gltf.scene.translateZ(31);*/
-						gltf.scene.translateX(-10.453197452680099);
+						gltf.scene.translateZ(31);
+						/*gltf.scene.translateX(-10.453197452680099);
 						gltf.scene.translateY(-0.7624199999998517 );
-						gltf.scene.translateZ(26.981207638720633 );
+						gltf.scene.translateZ(26.981207638720633 );*/
 
 						gltf.scene.traverse(function (child) {
 	            if (child.isMesh) {
@@ -290,7 +348,7 @@
 			function GenMoai() {
 
 				//generate charactere : Moai + set default animation
-				new GLTFLoader().setPath( '3D/Objets/Moai/' ).load( 'Moai.glb', function ( gltf ) {
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/Moai/' ).load( 'Moai.glb', function ( gltf ) {
 
 						gltf.scene.translateX(-11);
 						gltf.scene.translateY(-2);
@@ -313,7 +371,7 @@
 			function GenGandalf() {
 
 				//generate charactere : Moai + set default animation
-				new GLTFLoader().setPath( '3D/Objets/gandalf/' ).load( 'gandalf.glb', function ( gltf ) {
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/gandalf/' ).load( 'gandalf.glb', function ( gltf ) {
 
 						gltf.scene.translateX(15);
 						gltf.scene.translateY(-1);
@@ -338,7 +396,7 @@
 			function GenGandalfText() {
 
 				//generate charactere : Moai + set default animation
-				new GLTFLoader().setPath( '3D/Objets/Text/' ).load( 'gandalfTxt.glb', function ( gltf ) {
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/Text/' ).load( 'gandalfTxt.glb', function ( gltf ) {
 
 						gltf.scene.translateX(15);
 						gltf.scene.translateY(0.5);
@@ -444,7 +502,7 @@
 			function animate() {
 
 				// This block runs while resources are loading.
-				/*if( RESOURCES_LOADED == false ){
+				if( RESOURCES_LOADED == false ){
 					requestAnimationFrame(animate);
 
 					//loadingScreen.box.position.x -= 0.05;
@@ -453,7 +511,7 @@
 
 					renderer.render(loadingScreen.scene, loadingScreen.camera);
 					return; // Stop the function here.
-				}*/
+				}
 
 				requestAnimationFrame( animate );
 
