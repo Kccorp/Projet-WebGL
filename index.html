@@ -51,7 +51,7 @@
 			let space_bar = 32;
 
 			let verif_actions, tmp = 0;
-			let Mousey;
+			let Mousey, Cam;
 
 			/*var loadingScreen = {
 				scene: new THREE.Scene(),
@@ -65,6 +65,7 @@
 			var RESOURCES_LOADED = false;
 
 			init();
+			sound();
 
 
 			Animations();
@@ -146,6 +147,45 @@
 
 			}
 
+			function sound(){
+				// create an AudioListener and add it to the camera
+				const listener = new THREE.AudioListener();
+				camera.add( listener );
+
+				// create a global audio source
+				const soundShire = new THREE.Audio( listener );
+				const soundPop = new THREE.Audio( listener );
+				const soundRiver = new THREE.PositionalAudio( listener );
+
+				// load a sound and set it as the Audio object's buffer
+				const audioLoader = new THREE.AudioLoader();
+				audioLoader.load( './musique/the-shire.mp3', function( buffer ) {
+					soundShire.setBuffer( buffer );
+					soundShire.setLoop( true );
+					soundShire.setVolume( 0.02 );
+					soundShire.play();
+				});
+
+				audioLoader.load( './musique/pop.mp3', function( buffer ) {
+					soundPop.setBuffer( buffer );
+					soundPop.setLoop( true );
+					soundPop.setVolume(1);
+				});
+
+				audioLoader.load( './musique/river.mp3', function( buffer ) {
+					soundRiver.setBuffer( buffer );
+					soundRiver.setRefDistance( 1 );
+					soundRiver.setVolume( 0.5 );
+					soundRiver.play();
+				});
+				const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+				const material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+				const cube = new THREE.Mesh( geometry, material );
+				cube.position.set(-3,-2,27.4);
+				cube.visible = false;
+				scene.add( cube );
+				cube.add(soundRiver);
+			}
 
 			function Animations() {
 				//generate animation : WALK
@@ -345,6 +385,9 @@
 					if (scene.children[i].name == "Mousey") {
 						Mousey = i;
 					}
+					if (scene.children[i].name == "camera") {
+						Cam = i;
+					}
 				}
 
 			}
@@ -431,7 +474,7 @@
 						scene.children[Mousey].translateY(0.00210);
 
 						//console.log(scene);
-						console.log(scene.children[0]);
+						console.log(scene);
 						controls.target.set( scene.children[Mousey].position.x+10, scene.children[Mousey].position.y+2, scene.children[Mousey].position.z );
 						scene.children[0].translateZ(-0.01);
 						scene.children[0].translateY(0.00210);
@@ -555,6 +598,7 @@
 
 			function roadPart2() {
 				console.log("niquel !!");
+				soundPop.play();
 				scene.children[Mousey].position.set(0.5,-1.54,27.4);
 
 			}
