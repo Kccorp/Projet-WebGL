@@ -41,12 +41,19 @@
 
 			let mixer                = null;     // Three.JS AnimationMixer
 			let mixerWorld           = null;
-			let mixerDancer          = null;
-			let Player_anim_IDLE     = undefined;    // Animation IDLE
+			let mixerKnight         = null;
+			let mixerGuard          = null;
+			let mixerMage           = null;
+			let mixerGoblin           = null;
+			let Player_anim_IDLE     = undefined;
+			let Player_anim_KNIGHT     = undefined;    // Animation IDLE
 			let Player_anim_WALK     = undefined;    // Animation WALK
 			let Player_anim_WORLD    = undefined;    // Animation WALK
 			let Player_anim_JUMP     = undefined;    // Animation WALK
 			let Player_anim_DANCE = undefined;
+			let Player_anim_GUARD = undefined;
+			let Player_anim_MAGE = undefined;
+			let Player_anim_GOBLIN = undefined;
 
 
 
@@ -54,7 +61,10 @@
 
 			let clock = new THREE.Clock(); //lance l'horloge
 			let clockWorld = new THREE.Clock(); //lance l'horloge
-			let clockDance = new THREE.Clock(); //lance l'horloge
+			let clockKnight = new THREE.Clock(); //lance l'horloge
+			let clockGuard = new THREE.Clock(); //lance l'horloge
+			let clockMage = new THREE.Clock(); //lance l'horloge
+			let clockGoblin = new THREE.Clock(); //lance l'horloge
 
 			let z_press = 90;
 			let j_press = 74;
@@ -82,10 +92,14 @@
 
 			Animations();
 			World();
+			Genknight();
 			GenObject();
 			GenMoai();
 			GenGandalf();
 			GenGandalfText();
+			GenGuard();
+			GenMage();
+			GenGoblin();
 			buildGui();
 			animate();
 
@@ -279,6 +293,14 @@
 
 				} );
 
+				new GLTFLoader().setPath( '3D/Objets/knight/' ).load( 'Guard.glb', function ( gltf ) {
+
+						//------------Anims-------------------------------
+						Player_anim_GUARD = gltf.animations[0] ; // first animation
+
+				} );
+
+
 				//generate animation : IDLE
 				new GLTFLoader().setPath( '3D/animations/gltf/' ).load( 'BreathingIDLE.glb', function ( gltf ) {
 
@@ -300,6 +322,25 @@
 						//------------Anims-------------------------------
 						Player_anim_JUMP = gltf.animations[0] ; // first animation
 				} );
+
+				new GLTFLoader().setPath( '3D/Objets/knight/' ).load( 'test.glb', function ( gltf ) {
+
+						//------------Anims-------------------------------
+						Player_anim_KNIGHT = gltf.animations[0] ; // first animation
+				} );
+				new GLTFLoader().setPath( '3D/Objets/knight/' ).load( 'Mage.glb', function ( gltf ) {
+
+						//------------Anims-------------------------------
+						Player_anim_MAGE = gltf.animations[0] ; // first animation
+				} );
+
+				new GLTFLoader().setPath( '3D/Objets/knight/' ).load( 'Goblin.glb', function ( gltf ) {
+
+						//------------Anims-------------------------------
+						Player_anim_GOBLIN = gltf.animations[0] ; // first animation
+				} );
+
+
 			}
 
 			function World(){
@@ -417,6 +458,174 @@
 						scene.add( gltf.scene );
 					} );
 			}
+
+			function Genknight() {
+
+
+
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/knight/' ).load( 'test.glb', function ( gltf ) {
+
+					gltf.scene.translateX(15);
+					gltf.scene.translateY(-1);
+					gltf.scene.translateZ(12.4);
+
+
+						gltf.scene.traverse(function (child) {
+	            if (child.isMesh) {
+	                 child.receiveShadow = true;
+	                 child.castShadow = true;
+	             }
+	         })
+
+
+
+						gltf.scene.rotation.y = Math.PI / -2.75;
+
+						// ---------------- ANIMATIONMIXER----------------
+		 				mixerKnight = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
+
+						Player_anim_KNIGHT = gltf.animations[0] ; // first animation
+
+						//------------Anims-------------------------------
+						mixerKnight.clipAction( Player_anim_KNIGHT ).play(); //joue l'animation chargé
+
+						gltf.scene.name = "knight";
+
+						let deltaknight = clockKnight.getDelta(); // fait le delta avec la clock n-1
+						mixerKnight.update(deltaknight);	//actualise l'animation
+
+
+
+
+						scene.add( gltf.scene );
+					} );
+
+			}
+			function GenGuard() {
+
+
+
+				new GLTFLoader(loadingManager).setPath( '3D/Objets/knight/' ).load( 'Guard.glb', function ( gltf ) {
+
+					gltf.scene.translateX(7.8);
+					gltf.scene.translateY(1.5);
+					gltf.scene.translateZ(12);
+
+
+						gltf.scene.traverse(function (child) {
+	            if (child.isMesh) {
+	                 child.receiveShadow = true;
+	                 child.castShadow = true;
+	             }
+	         })
+
+
+
+						gltf.scene.rotation.y = Math.PI / 2.75;
+
+						// ---------------- ANIMATIONMIXER----------------
+		 				mixerGuard = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
+
+						Player_anim_GUARD = gltf.animations[0] ; // first animation
+
+						//------------Anims-------------------------------
+						mixerGuard.clipAction( Player_anim_GUARD ).play(); //joue l'animation chargé
+
+
+
+						let deltaGuard = clockGuard.getDelta(); // fait le delta avec la clock n-1
+						mixerGuard.update(deltaGuard);	//actualise l'animation
+
+
+
+
+						scene.add( gltf.scene );
+					} );
+				}
+
+			function GenMage() {
+
+
+
+					new GLTFLoader(loadingManager).setPath( '3D/Objets/knight/' ).load( 'Mage.glb', function ( gltf ) {
+
+						gltf.scene.translateX(15);
+						gltf.scene.translateY(-1);
+						gltf.scene.translateZ(-5);
+
+
+							gltf.scene.traverse(function (child) {
+								if (child.isMesh) {
+										 child.receiveShadow = true;
+										 child.castShadow = true;
+								 }
+						 })
+
+
+
+							gltf.scene.rotation.y = Math.PI / -5;
+
+							// ---------------- ANIMATIONMIXER----------------
+							mixerMage = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
+
+							Player_anim_MAGE = gltf.animations[0] ; // first animation
+
+							//------------Anims-------------------------------
+							mixerGuard.clipAction( Player_anim_MAGE ).play(); //joue l'animation chargé
+
+
+
+							let deltaMage = clockMage.getDelta(); // fait le delta avec la clock n-1
+							mixerMage.update(deltaMage);	//actualise l'animation
+
+
+
+
+							scene.add( gltf.scene );
+						} );
+					}
+
+			function GenGoblin() {
+
+
+
+							new GLTFLoader(loadingManager).setPath( '3D/Objets/knight/' ).load( 'Goblin.glb', function ( gltf ) {
+
+								gltf.scene.translateX(8);
+								gltf.scene.translateY(0);
+								gltf.scene.translateZ(-16);
+
+
+									gltf.scene.traverse(function (child) {
+										if (child.isMesh) {
+												 child.receiveShadow = true;
+												 child.castShadow = true;
+										 }
+								 })
+
+
+
+
+
+									// ---------------- ANIMATIONMIXER----------------
+									mixerGoblin = new THREE.AnimationMixer( gltf.scene); //l'object possèdant les animations
+
+									Player_anim_GOBLIN = gltf.animations[0] ; // first animation
+
+									//------------Anims-------------------------------
+									mixerGoblin.clipAction( Player_anim_GOBLIN).play(); //joue l'animation chargé
+
+
+
+									let deltaGoblin = clockGoblin.getDelta(); // fait le delta avec la clock n-1
+									mixerGoblin.update(deltaGoblin);	//actualise l'animation
+
+
+
+
+									scene.add( gltf.scene );
+								} );
+							}
 
 			function GenGandalfText() {
 
@@ -943,6 +1152,7 @@
 				soundIsengard.play();
 				scene.children[Mousey].position.set(0.5,-1.54,27.4);
 
+
 			}
 
 			function render() {
@@ -955,6 +1165,8 @@
 					let deltaWorld = clockWorld.getDelta(); // fait le delta avec la clock n-1
 					mixerWorld.update(deltaWorld);	//actualise l'animation
 				}
+
+
 
 
 
