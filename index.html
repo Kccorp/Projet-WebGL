@@ -73,7 +73,7 @@
 			let verif_actions, tmp = 0, tmp2 = 3, part2 = 0, parthur=0;
 			let Mousey, Cam;
 
-			let soundPop, soundRiver, soundShire, soundIsengard, soundYsnp;
+			let soundPop, soundRiver, soundShire, soundIsengard, soundYsnp, soundFinal;
 
 			var loadingScreen = {
 				scene: new THREE.Scene(),
@@ -184,6 +184,7 @@
 				soundPop = new THREE.Audio( listener );
 				soundYsnp = new THREE.Audio( listener );
 				soundRiver = new THREE.PositionalAudio( listener );
+				soundFinal = new THREE.Audio( listener );
 
 				// load a sound and set it as the Audio object's buffer
 				const audioLoader = new THREE.AudioLoader();
@@ -211,6 +212,14 @@
 					soundYsnp.setBuffer( buffer );
 					soundYsnp.setLoop( false );
 					soundYsnp.setVolume(0.3);
+				});
+
+				audioLoader.load( './musique/ffi-victory.mp3', function( buffer ) {
+
+					soundFinal.setBuffer( buffer );
+					soundFinal.setLoop( false );
+					soundFinal.setVolume( 0.01 );
+
 				});
 
 				audioLoader.load( './musique/river.mp3', function( buffer ) {
@@ -1115,10 +1124,15 @@
 
 
 					}else if (verif_actions == "WALK" && parthur==1  && scene.children[Mousey].position.x < -6  ) {
-						console.log("ARTHUR AIME LES GROS FIAKS");
+						soundIsengard.pause();
+						soundFinal.play();
+
+						scene.children[Mousey].rotation.y = Math.PI /1.5;
+						controls.target.set( scene.children[Mousey].position.x, scene.children[Mousey].position.y, scene.children[Mousey].position.z );
+						camera.position.set (3, 1, -15);
 
 							stop();
-							soundIsengard.pause();
+
 
 
 
