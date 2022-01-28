@@ -8,16 +8,16 @@
 		<!--css bootstrap-->
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 	</head>
+	<body >
 
-	<body>
 
-		<div id="blocker">
-			<div id="instructions">
-				<p style="font-size:36px">
-					Lancer l'histoire
-				</p>
+			<div id="blocker">
+				<div id="instructions">
+					<p style="font-size:36px" >
+						Lancer l'histoire
+					</p>
+				</div>
 			</div>
-		</div>
 
 
 		<script type="module">
@@ -254,8 +254,8 @@
 
 				loadingManager.onProgress = function(item, loaded, total){
 					const loadingScreen = document.getElementById( 'loading-screen' );
-					console.log(loadingScreen);
-					//console.log(loaded*100/total);
+					//console.log(loadingScreen);
+					console.log(loaded*100/total);
 				};
 
 				loadingManager.onLoad = function(){
@@ -907,7 +907,7 @@
 						scene.children[0].translateZ(-0.01);
 						scene.children[0].translateY(-0.005);
 						controls.update();
-					
+
 
 					}
 					else if (verif_actions == "WALK" && part2 == 0 && jmp==0 ) { //FIN
