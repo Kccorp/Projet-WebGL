@@ -70,7 +70,7 @@
 			let j_press = 74;
 			let space_bar = 32;
 
-			let verif_actions, tmp = 0, tmp2 = 3, part2 = 0, parthur=0;
+			let verif_actions, tmp = 0, tmp2 = 3, part2 = 0, parthur=0, jmp=0;
 			let Mousey, Cam;
 
 			let soundPop, soundRiver, soundShire, soundIsengard, soundYsnp;
@@ -898,14 +898,21 @@
 						scene.children[0].translateZ(-0.01);
 						scene.children[0].translateY(-0.005);
 						controls.update();
+					
 
 					}
-					else if (verif_actions == "WALK" && part2 == 0) { //FIN
+					else if (verif_actions == "WALK" && part2 == 0 && jmp==0 ) { //FIN
+
+						jump();
+						jmp=1;
+
+
+					}
+
+					else if (verif_actions == "WALK" && part2 == 0 && jmp ==1) { //FIN
 
 
 						setTimeout(roadPart2(), 30000);
-
-
 
 
 					}
@@ -1139,6 +1146,7 @@
 				soundShire.pause();
 				soundIsengard.play();
 				scene.children[Mousey].position.set(0.5,-1.54,27.4);
+				marcher();
 
 
 			}
